@@ -18,7 +18,7 @@ class TITLE{
                 $this->title->calculation = (string) isset($data['calculation']) ? sanitize_str($data['calculation'],"title->insert : calculation") :  return_fail('title->insert : calculation is not defined in requested data');
 
                 // 4. exchange_rate
-                $this->title->exchange_rate = (int) isset($data['exchange_rate']) ? sanitize_int($data['exchange_rate'],"title->insert : exchange_rate") :  1; // this is default 
+                $this->title->exchange_rate = (float) isset($data['exchange_rate']) ? sanitize_float($data['exchange_rate'],"title->insert : exchange_rate") :  1; // this is default 
 
 
                 // 5. opening_date
@@ -27,20 +27,20 @@ class TITLE{
                 $this->title->opening_date = date("Y-m-d",$opening_date); // well formated time
 
                 // 6. balance
-                $this->title->balance = (int) isset($data['balance']) ? sanitize_int($data['balance'],"title->insert : balance") :  return_fail('title->insert : balance is not defined in requested data');
+                $this->title->balance = (float) isset($data['balance']) ? sanitize_float($data['balance'],"title->insert : balance") :  return_fail('title->insert : balance is not defined in requested data');
 
                 // 7. total_income
-                $this->title->total_income = (int) isset($data['total_income']) ? sanitize_int($data['total_income'],"title->insert : total_income") :  return_fail('title->insert : total_income is not defined in requested data');
+                $this->title->total_income = (float) isset($data['total_income']) ? sanitize_float($data['total_income'],"title->insert : total_income") :  return_fail('title->insert : total_income is not defined in requested data');
 
                 // 8. total_expense
-                $this->title->total_expense = (int) isset($data['total_expense']) ? sanitize_int($data['total_expense'],"title->insert : total_expense") :  return_fail('title->insert : total_expense is not defined in requested data');
+                $this->title->total_expense = (float) isset($data['total_expense']) ? sanitize_float($data['total_expense'],"title->insert : total_expense") :  return_fail('title->insert : total_expense is not defined in requested data');
 
                 // 9. created_date
                 $this->title->created_date = date("Y-m-d h:m:s");
 
                 // 10. modified_date
                 $this->title->modified_date = date("Y-m-d h:m:s");
-
+                R::begin();
                 try{
                         $id = R::store($this->title);
 
@@ -62,10 +62,11 @@ class TITLE{
                         $finance->title = $this->title; 
                         $finance->auth = null;
                         $finance_id = R::store($finance);
-
+                        R::commit();
                         $test = $this->title->currency; // to get full data 
                         return_success("title->insert",$this->title);
                 }catch(Exception $exp){
+                        R::rollback();
                         return_fail("title->insert : exception ",$exp->getMessage());
                 }
         }
