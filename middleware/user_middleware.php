@@ -2,55 +2,65 @@
 use \Firebase\JWT\JWT; // declaring class
 $jwt_password = $_SERVER['HTTP_JWT_PASSWORD']; // from enviroment variable
 
-function middleware_super_user($request_data){
+function middleware_login($data){
+	global $jwt_password;
+	//  1. name 
+	$name = (string) isset($data['name']) ? sanitize_str($data['name'],"user_middleware->login : name") :  return_fail('user_middleware->login : name is not defined in requested data');
+	//  1. password 
+	$password = (string) isset($data['password']) ? sanitize_str($data['password'],"user_middleware->login : password") :  return_fail('user_middleware->login : password is not defined in requested data');
+	$users = R::find('user', ' name = ? AND password = ?', [ $name, $password ] );
+	if(count($users) == 0 ) return_fail("user_middleware->login : username and password does not match");
+	$return_data = array();
+    foreach($users AS $index=>$user){
+        $return_data[] = $user;
+	}
+	$user = $return_data[0];
+	$user->password = null;
+	//$user->exp = 1523798257; // expire time in milisecond
+	// TDL 
+	/*
+		Generate JWT and set to user data
+	*/
+	$jwt = JWT::encode($user,$jwt_password);
+	$user->jwt = $jwt;
+	return_success("user_middleware->login",$user);
+}
+function middleware_user($request_data){
 	global $jwt_password;
 	$jwt = (string) isset($request_data['jwt']) ? sanitize_str($request_data['jwt'],"request_data->jwt") :  return_fail('jwt is not defined in requested data');
 	try{
 		$decoded = JWT::decode($jwt, $jwt_password, array('HS256'));
-		$decoded_array = (array) $decoded; // cast array 
-		// admin role is 1 
-		//echo "decoded array is ".$decoded_array['role'];
-		if($decoded_array['role'] <= 3 ){
+		$decoded_array = (array) $decoded; 
+		if($decoded_array['role'] == "user"){
+			// pass
+		}
+		else if($decoded_array['role'] == "admin"){
 			// pass
 		}
 		else{
-			return_fail("insufficient_role","At least super user role is needed");
+			return_fail("insufficient_role : You don't have sufficient role for requested resources ",$decoded_array['role']);
 		}
 	}catch(\Exception $e){
 		$str = 'Caught exception in JWT::decode : '.  $e->getMessage(). "\n";
 		return_fail("invalid_jwt",$str);
 	}
 }
-function middleware_normal_user($request_data){
+function middleware_admin($request_data){
 	global $jwt_password;
-	$jwt = $request_data['jwt']; // the only data contained in SOLDIER object
+	$jwt = (string) isset($request_data['jwt']) ? sanitize_str($request_data['jwt'],"request_data->jwt") :  return_fail('jwt is not defined in requested data');
 	try{
 		$decoded = JWT::decode($jwt, $jwt_password, array('HS256'));
-		$decoded_array = (array) $decoded; // cast array 
-		// admin role is 1 
-		if($decoded_array['role'] <= 2){
+		$decoded_array = (array) $decoded; 
+		if($decoded_array['role'] == "admin"){
 			// pass
-		}else{
-			return_fail("insufficient_role","At least normal role is needed");
+		}
+		else{
+			return_fail("insufficient_role : You don't have sufficient role for requested resources ",$decoded_array['role']);
 		}
 	}catch(\Exception $e){
 		$str = 'Caught exception in JWT::decode : '.  $e->getMessage(). "\n";
 		return_fail("invalid_jwt",$str);
 	}
 }
-function middleware_system_user($request_data){
-	global $jwt_password;
-	$jwt = $request_data['jwt']; // the only data contained in SOLDIER object
-	try{
-		$decoded = JWT::decode($jwt, $jwt_password, array('HS256'));
-		$decoded_array = (array) $decoded; // cast array 
-		// admin role is 1 
-		if($decoded_array['role'] != 1){
-			return_fail("insufficient_role","Only System Admin can operate.");
-		}
-	}catch(\Exception $e){
-		$str = 'Caught exception in JWT::decode : '.  $e->getMessage(). "\n";
-		return_fail("invalid_jwt",$str);
-	}
-}
+
 ?>

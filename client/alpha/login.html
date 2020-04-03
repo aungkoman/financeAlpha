@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>MEHCPL Finance</title>
+    <link rel="apple-touch-icon" href="img/logo.png">
+    <link rel="shortcut icon" href="img/logo.png">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="css/all.css">
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <!-- Material Design Bootstrap -->
+  <link rel="stylesheet" href="css/mdb.min.css">
+  <link rel="stylesheet" href="css/jquery.loadingModal.min.css">
+  <!-- Your custom styles (optional) -->
+  <style>
+    body{
+        background-image : url("img/background.jpg");
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+    }
+    section{
+        max-width : 400px;
+        margin : auto;
+        padding-top : 200px;
+    }
+    img{
+        max-width : 400px;
+        text-align: center;
+    }
+    label,input{
+        display : block;
+    }
+    label{
+    }
+    input{
+        width : 200px;
+        border-radius = 20%;
+    }
+    input[type=submit]{
+        margin-top : 20px;
+    }
+    input[type=text] {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        box-sizing: border-box;
+        border: 2px solid gray;
+        border-radius: 4px;
+    }
+    input[type=text]:focus {
+        background-color: lightblue;
+    }
+    input[type=button], input[type=submit], input[type=reset] {
+        width: 100%;
+        background-color: gray;
+        border: none;
+        color: white;
+        padding: 16px 32px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+    input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
+        background-color: #4CAF50;
+    }
+    
+  </style>
+</head>
+
+<body>
+    <section>
+        <!--img src="img/mdb-transaprent-noshadows.png" alt="MEHPCL Finance Logo"-->
+        <h3>MEHPCL Finance</h3>
+        <form id="loginForm">
+            <label for="nameInput">Username</label>
+            <input type="text" id="nameInput" name="name" required>
+            <label for="passwordInput">Password</label>
+            <input type="text" id="passwordInput" name="password" required>
+            <input type="submit" value="Login">
+        </form>
+    </section>
+
+
+  <!-- SCRIPTS -->
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="js/popper.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+  <!-- MDB core JavaScript -->
+  <script type="text/javascript" src="js/mdb.min.js"></script>
+  <script src="js/jquery.loadingModal.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      console.log("Login document is ready");
+      function showLoadingModal(msg){
+                $('body').loadingModal({
+                  position: 'auto',
+                  text: msg,
+                  color: '#fff',
+                  opacity: '0.7',
+                  backgroundColor: 'rgb(0,0,0)',
+                  animation: 'wave'
+                });
+            }
+            // 2. Hide Loading Modal
+            function hideLoadingModal(){
+                $('body').loadingModal('hide');
+                // destroy the plugin
+                $('body').loadingModal('destroy');
+            }
+        var webserviceUrl = "../../api/v1/";
+        var userEndpoint = webserviceUrl+"user/index.php";
+        
+      $("#loginForm").on("submit",function(e){
+          e.preventDefault();
+          console.log("loginForm is submited");
+          showLoadingModal("Logging in....");
+          console.log("logging in is started");
+          let formData = new FormData(this);
+          formData.append("ops_type","login");
+          $.ajax({
+            url: userEndpoint,
+            type: "post",
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                console.log("login  success");
+                console.log(response);
+                setTimeout(function(){
+                    hideLoadingModal();
+                    if(response.status){
+                        msg = "Login success";
+                        toastr.info(msg);
+                        localStorage.setItem("user",JSON.stringify(response.data));
+                        showLoadingModal("Redirecting to Main Panel");
+                        window.location.assign("index.html");
+
+                    }else{
+                         msg = "Login fail "+response.msg;
+                        toastr.warning(msg);
+                    }
+                },1000);
+            },
+            error: function(response) {
+                console.log("login network error");
+                console.log(response.responseText);
+                setTimeout(function(){
+                    hideLoadingModal();
+                },1000);
+            }
+          });
+      })
+    });
+  </script>
+</body>
+
+</html>
