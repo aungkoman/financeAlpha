@@ -11,6 +11,9 @@
 		include('../../../middleware/user_middleware.php'); // User Middleware
 
 		include ('phpqrcode/qrlib.php');
+
+		
+		middleware_user($request_data);
 		/*
 			TDL :
 			  we have to retrieve data from server

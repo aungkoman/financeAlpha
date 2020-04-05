@@ -19,15 +19,19 @@ switch ($method) {
         $ops_type = (string) isset($request_data['ops_type']) ? sanitize_str($request_data['ops_type'],"bank->ops_type") :  return_fail('bank->ops_type : ops_type is not defined in requested data'); // ops_type sanitize string
         switch ($ops_type){
             case 'insert':
+                middleware_admin($request_data);
                 $bank->insert($request_data);
                 break;
             case 'select':
+                middleware_user($request_data);
                 $bank->select($request_data);
                 break;
             case 'update':
+                middleware_admin($request_data);
                 $bank->update($request_data);
                 break;
             case 'delete':
+                middleware_admin($request_data);
                 $bank->delete($request_data);
                 break;
             default :

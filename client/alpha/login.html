@@ -44,7 +44,7 @@
     input[type=submit]{
         margin-top : 20px;
     }
-    input[type=text] {
+    input[type=text],input[type=password] {
         width: 100%;
         padding: 12px 20px;
         margin: 8px 0;
@@ -52,7 +52,7 @@
         border: 2px solid gray;
         border-radius: 4px;
     }
-    input[type=text]:focus {
+    input[type=text]:focus,,input[type=password]:focus {
         background-color: lightblue;
     }
     input[type=button], input[type=submit], input[type=reset] {
@@ -80,7 +80,7 @@
             <label for="nameInput">Username</label>
             <input type="text" id="nameInput" name="name" required>
             <label for="passwordInput">Password</label>
-            <input type="text" id="passwordInput" name="password" required>
+            <input type="password" id="passwordInput" name="password" required>
             <input type="submit" value="Login">
         </form>
     </section>
@@ -96,6 +96,7 @@
   <script>
     $(document).ready(function () {
       console.log("Login document is ready");
+      localStorage.removeItem("jwt");
       function showLoadingModal(msg){
                 $('body').loadingModal({
                   position: 'auto',
@@ -137,7 +138,8 @@
                     if(response.status){
                         msg = "Login success";
                         toastr.info(msg);
-                        localStorage.setItem("user",JSON.stringify(response.data));
+                        //localStorage.setItem("user",JSON.stringify(response.data));
+                        localStorage.setItem("jwt",response.data.jwt);
                         showLoadingModal("Redirecting to Main Panel");
                         window.location.assign("index.html");
 

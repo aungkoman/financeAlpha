@@ -19,15 +19,19 @@ switch ($method) {
         $ops_type = (string) isset($request_data['ops_type']) ? sanitize_str($request_data['ops_type'],"auth->ops_type") :  return_fail('auth->ops_type : ops_type is not defined in requested data'); // ops_type sanitize string
         switch ($ops_type){
             case 'insert':
+                middleware_admin($request_data);
                 $auth->insert($request_data);
                 break;
             case 'select':
+                middleware_user($request_data);
                 $auth->select($request_data);
                 break;
             case 'update':
+                middleware_admin($request_data);
                 $auth->update($request_data);
                 break;
             case 'delete':
+                middleware_admin($request_data);
                 $auth->delete($request_data);
                 break;
             default :

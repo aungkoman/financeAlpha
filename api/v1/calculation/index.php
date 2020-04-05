@@ -19,12 +19,15 @@ switch ($method) {
         $ops_type = (string) isset($request_data['ops_type']) ? sanitize_str($request_data['ops_type'],"calculation->ops_type") :  return_fail('calculation->ops_type : ops_type is not defined in requested data'); // ops_type sanitize string
         switch ($ops_type){
             case 'trail':
+                middleware_user($request_data);
                 $calculation->trail($request_data);
                 break;
             case 'profit_and_lose':
+                middleware_user($request_data);
                 $calculation->profit_and_lose($request_data);
                 break;
             case 'balance_sheet':
+                middleware_user($request_data);
                 $calculation->balance_sheet($request_data);
                 break;
             default :

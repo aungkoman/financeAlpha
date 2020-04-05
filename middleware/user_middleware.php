@@ -2,7 +2,7 @@
 use \Firebase\JWT\JWT; // declaring class
 $jwt_password = $_SERVER['HTTP_JWT_PASSWORD']; // from enviroment variable
 
-function middleware_login($data){
+function middleware_login2($data){
 	global $jwt_password;
 	//  1. name 
 	$name = (string) isset($data['name']) ? sanitize_str($data['name'],"user_middleware->login : name") :  return_fail('user_middleware->login : name is not defined in requested data');
@@ -24,6 +24,41 @@ function middleware_login($data){
 	$jwt = JWT::encode($user,$jwt_password);
 	$user->jwt = $jwt;
 	return_success("user_middleware->login",$user);
+}
+function middleware_login($data){
+	global $jwt_password;
+	//  1. name 
+	$name = (string) isset($data['name']) ? sanitize_str($data['name'],"user_middleware->login : name") :  return_fail('user_middleware->login : name is not defined in requested data');
+	//  1. password 
+	$password = (string) isset($data['password']) ? sanitize_str($data['password'],"user_middleware->login : password") :  return_fail('user_middleware->login : password is not defined in requested data');
+	$users = R::find('user', ' name = ?', [ $name ] );
+	if(count($users) == 0 ) return_fail("user_middleware->login : username is not found in our system");
+	$return_data = array();
+    foreach($users AS $index=>$user){
+        $return_data[] = $user;
+	}
+	$user = $return_data[0];
+	if(password_verify($password,$user->password)){
+		$user->password = null;
+		//$user->exp = 1523798257; // expire time in milisecond
+		// TDL 
+		/*
+			Generate JWT and set to user data
+		*/
+		$jwt = JWT::encode($user,$jwt_password);
+		$user->jwt = $jwt;
+		$user->password = null;
+		return_success("user_middleware->login",$user);
+	}else{
+		return_fail("user_middleware->login : username and password does not match");
+	}
+	
+}
+function middleware_user2($request_data){
+
+}
+function middleware_admin2($request_data){
+	
 }
 function middleware_user($request_data){
 	global $jwt_password;

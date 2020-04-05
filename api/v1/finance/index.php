@@ -19,6 +19,7 @@ switch ($method) {
         $ops_type = (string) isset($request_data['ops_type']) ? sanitize_str($request_data['ops_type'],"finance->ops_type") :  return_fail('finance->ops_type : ops_type is not defined in requested data'); // ops_type sanitize string
         switch ($ops_type){
             case 'insert':
+                middleware_user($request_data);
                 // 1. upload file to /upload
                 // 2. save file name to finance by modifying case_file 
                 /*
@@ -50,15 +51,19 @@ switch ($method) {
                 $finance->insert($request_data);
                 break;
             case 'select':
+                middleware_user($request_data);
                 $finance->select($request_data);
                 break;
             case 'update':
+                middleware_admin($request_data);
                 $finance->update($request_data);
                 break;
             case 'delete':
+                middleware_admin($request_data);
                 $finance->delete($request_data);
                 break;
             case 'dashboard':
+                middleware_admin($request_data);
                 $finance->dashboard($request_data);
                 break;
             default :

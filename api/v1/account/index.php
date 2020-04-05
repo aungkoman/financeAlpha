@@ -28,15 +28,19 @@ switch ($method) {
                     Coz we alredy knew the constraint for each operiation
                     such as every insertion has finance opening balance log
                 */
+                middleware_admin($request_data);
                 $account->insert($request_data);
                 break;
             case 'select':
+                middleware_user($request_data);
                 $account->select($request_data);
                 break;
             case 'update':
+                middleware_admin($request_data);
                 $account->update($request_data);
                 break;
             case 'delete':
+                middleware_admin($request_data);
                 $account->delete($request_data);
                 break;
             default :
