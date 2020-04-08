@@ -33,6 +33,8 @@ $(document).ready(function() {
     var socket_server_attemp = 0;
     var socket_server_limit = 5;
 
+    var datatable_instances = {};
+
     var thisIsJwt = localStorage.getItem("jwt");
     console.log("jwt is ");
     console.log(thisIsJwt);
@@ -106,6 +108,39 @@ $(document).ready(function() {
         // destroy the plugin
         $('body').loadingModal('destroy');
     }
+    function makeDataTable(dataTable){
+        //$("#" + dataTable)
+        //$('#priceTable').DataTable({
+        // check
+        for(let dataTableId in datatable_instances){
+            if(dataTableId == dataTable ) datatable_instances[dataTableId].destroy();
+        }
+        let newDataTable = $("#" + dataTable).DataTable({
+          "ordering": false,
+          dom: 'Bfrtip',
+          buttons: ['excel', 'print'],
+          initComplete: function() {
+            this.api().columns().every(function() {
+              var column = this;
+              var select = $('<select><option value=""></option></select>').appendTo($(column.footer()).empty())
+                //.appendTo( $(column.header()).append("<tr></tr>") )
+                .on('change', function() {
+                  var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                  column.search(val ? '^' + val + '$' : '', true, false).draw();
+                });
+              column.data().unique().sort().each(function(d, j) {
+                select.append('<option value="' + d + '">' + d + '</option>')
+              });
+            });
+          }
+        });
+        $(".buttons-print").removeClass("btn-secondary").addClass("buttons-export");
+        $(".buttons-excel").removeClass("btn-secondary").addClass("buttons-export");
+
+        datatable_instances[dataTable] = newDataTable;
+
+    }
+
     // 3. Set Local Storage
     // 4. Get Local Storage
     /////////////////////////////////////////////////
@@ -2415,6 +2450,7 @@ $(document).ready(function() {
                         // });
                         //Currencys.add(response.data);
                         //alert("see in console ");
+                        makeDataTable("trailTable");
                         hideLoadingModal();
                     }, 1000);
                 } else {
@@ -2488,6 +2524,7 @@ $(document).ready(function() {
                         $("#profitAndLoseTable > tbody").append("<tr><td>" + serialNo + "</td><td>" + titleModel.get("name") + "</td><td>" + profitObj.total_expense + "</td><td>" + profitObj.total_income + "</td><td>" + profitObj.status + "</td><td>" + profitObj.balance + "</td></tr>");
                         serialNo++;
                     }
+                    makeDataTable("profitAndLoseTable");
                     setTimeout(function() {
                         hideLoadingModal();
                     }, 1000);
@@ -2548,9 +2585,7 @@ $(document).ready(function() {
                 $("#balanceSheetTable > tbody").empty();
                 if (response.status) {
                     let serialNo = 1;
-                    if (response.data.length == 0) {
-                        $("#balanceSheetTable > tbody").append("<tr><td colspan='4'>There is no data to calculate balance sheet</td></tr>");
-                    }
+                    
                     for (let i = 0; i < response.data.length; i++) {
                         let balanceObj = response.data[i];
                         let titleModel = Titles.find(function(title) {
@@ -2558,6 +2593,10 @@ $(document).ready(function() {
                         })
                         $("#balanceSheetTable > tbody").append("<tr><td>" + serialNo + "</td><td>" + titleModel.get("name") + "</td><td>" + balanceObj.total_expense + "</td><td>" + balanceObj.total_income + "</td><td>" + balanceObj.balance + "</td></tr>");
                         serialNo++;
+                    }
+                    makeDataTable("balanceSheetTable");
+                    if (response.data.length == 0) {
+                        $("#balanceSheetTable > tbody").append("<tr><td colspan='4'>There is no data to calculate balance sheet</td></tr>");
                     }
                     setTimeout(function() {
                         hideLoadingModal();
@@ -2745,7 +2784,9 @@ $(document).ready(function() {
                 setTimeout(function() {
                     $("#bankTable > tbody").empty();
                     Banks.add(response.data);
+                    makeDataTable("bankTable");
                     if (response.data.length == 0) $("#bankTable > tbody").html("<tr><td colspan='3'>There is no Banks on server. Please add new bank.</td></tr>");
+                    //$("#bankTable").DataTable();
                 }, 1000);
             } else {
                 console.log("there is no bank :D");
@@ -2776,6 +2817,7 @@ $(document).ready(function() {
                 setTimeout(function() {
                     $("#currencyTable > tbody").empty();
                     Currencys.add(response.data);
+                    makeDataTable("currencyTable");
                     if (response.data.length == 0) $("#currencyTable > tbody").html("<tr><td colspan='3'>There is no Currency on server. Please add new currency.</td></tr>");
                 }, 1000);
             } else {
@@ -2809,6 +2851,8 @@ $(document).ready(function() {
                     // $("#accountRowDashboardTable > tbody")
                     $("#accountRowDashboardTable > tbody").empty();
                     Accounts.add(response.data);
+                    makeDataTable("accountTable");
+                    makeDataTable("accountRowDashboardTable");
                     if (response.data.length == 0) $("#accountTable > tbody").html("<tr><td colspan='3'>There is no Accounts on server. Please add new account.</td></tr>");
                 }, 1000);
             } else {
@@ -2840,6 +2884,7 @@ $(document).ready(function() {
                 setTimeout(function() {
                     $("#authTable > tbody").empty();
                     Auths.add(response.data);
+                    makeDataTable("authTable");
                     if (response.data.length == 0) $("#authTable > tbody").html("<tr><td colspan='3'>There is no Auth Person on server. Please add new Auth Person.</td></tr>");
                 }, 1000);
             } else {
@@ -2872,7 +2917,10 @@ $(document).ready(function() {
                     $("#titleTable > tbody").empty();
                     $("#titleRowDashboardTable > tbody").empty();
                     Titles.add(response.data);
+                    makeDataTable("titleTable");
+                    makeDataTable("titleRowDashboardTable");
                     if (response.data.length == 0) $("#titleTable > tbody").html("<tr><td colspan='3'>There is no Title on server. Please add new Title.</td></tr>");
+                    if (response.data.length == 0) $("#titleRowDashboardTable > tbody").html("<tr><td colspan='3'>There is no Title on server. Please add new Title.</td></tr>");
                 }, 1000);
             } else {
                 console.log("there is no Title :D");
@@ -2903,6 +2951,7 @@ $(document).ready(function() {
                 setTimeout(function() {
                     $("#financeTable > tbody").empty();
                     Finances.add(response.data);
+                    makeDataTable("financeTable");
                     if (response.data.length == 0) $("#financeTable > tbody").html("<tr><td colspan='3'>There is no Finance on server. Please add new Finance.</td></tr>");
                 }, 1000);
             } else {
@@ -2933,6 +2982,7 @@ $(document).ready(function() {
                 setTimeout(function() {
                     $("#userTable > tbody").empty();
                     Users.add(response.data);
+                    makeDataTable("userTable");
                     if (response.data.length == 0) $("#userTable > tbody").html("<tr><td colspan='3'>There is no Users on server. Please add new user.</td></tr>");
                 }, 1000);
             } else {
